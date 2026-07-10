@@ -364,7 +364,6 @@ PROCEDURE pi-json-saida:
         END.
         
         IF ip-tipo = 2
-        OR ip-tipo = 3
         OR ip-tipo = 4 
         THEN DO:
             /** Obtem um JsonObject com base no conteudo do dataset **/
@@ -372,6 +371,14 @@ PROCEDURE pi-json-saida:
             oResponse    = NEW JsonAPIResponse(oJsonObject).          
             oResponse:setStatus(200).
         END.
+        
+       IF ip-tipo = 3
+        THEN DO:
+            /** Obtem um JsonObject com base no conteudo do dataset **/
+            oJsonObject  = JsonAPIUtils:convertTempTableFirstItemToJsonObject (TEMP-TABLE tt-api-conta:HANDLE).
+            oResponse    = NEW JsonAPIResponse(oJsonObject).          
+            oResponse:setStatus(201).
+        END.        
                             
         IF ip-tipo = 5  
         THEN DO:        
@@ -380,7 +387,7 @@ PROCEDURE pi-json-saida:
             oJsonObject:ADD('message', 'Registro exclu¡do com sucesso').
             oJsonObject:ADD('type', 'information').
             oResponse   = NEW JsonAPIResponse(oJsonObject).
-            oResponse:setStatus(200).        
+            oResponse:setStatus(204).        
         END.              
     END.    
     oJsonOutput = oResponse:createJsonResponse().  
