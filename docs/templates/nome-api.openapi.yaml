@@ -1,0 +1,251 @@
+# TEMPLATE OpenAPI — copie para <módulo>/<pacote>/api/v1/nome-da-api.openapi.yaml
+# e substitua os trechos entre {{ }}. Consulte docs/PADRAO-DOCUMENTACAO.md.
+
+openapi: 3.0.3
+
+info:
+  title: Datasul REST API - {{Nome Funcional da API}}
+  description: |
+    API responsável por {{descrever objetivo}} do módulo {{EMS2/CDP}} do TOTVS Datasul.
+
+    A API permite consultar, incluir, alterar e excluir {{recurso}}.
+  version: 1.0.0
+
+servers:
+  - url: "{{BASE_URL}}"
+    description: Ambiente Datasul
+
+tags:
+  - name: "{{Nome Funcional da API}}"
+    description: Operações relacionadas a {{recurso}}
+
+security:
+  - basicAuth: []
+
+paths:
+
+  "/{{pacote}}/v1/{{nome-api}}":
+
+    get:
+      tags:
+        - "{{Nome Funcional da API}}"
+      summary: Consulta {{recurso}}
+      description: |
+        Retorna uma lista paginada de {{recurso}}.
+      parameters:
+
+        - name: page
+          in: query
+          description: Página atual da consulta.
+          required: false
+          schema:
+            type: integer
+            example: 1
+
+        - name: pageSize
+          in: query
+          description: Quantidade de registros por página.
+          required: false
+          schema:
+            type: integer
+            example: 20
+
+        - name: search
+          in: query
+          description: Pesquisa textual.
+          required: false
+          schema:
+            type: string
+
+      responses:
+
+        "200":
+          description: Consulta realizada com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/{{Recurso}}Paginado"
+
+        "400":
+          description: Requisição inválida.
+
+        "500":
+          description: Erro interno do servidor.
+
+    post:
+      tags:
+        - "{{Nome Funcional da API}}"
+      summary: Inclui {{recurso}}
+      description: Cria um novo registro de {{recurso}}.
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/{{Recurso}}Create"
+
+      responses:
+
+        "201":
+          description: Registro criado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/{{Recurso}}"
+
+        "400":
+          description: Dados inválidos.
+
+        "409":
+          description: Registro já existente.
+
+        "500":
+          description: Erro interno do servidor.
+
+  "/{{pacote}}/v1/{{nome-api}}/{id}":
+
+    get:
+      tags:
+        - "{{Nome Funcional da API}}"
+      summary: Consulta {{recurso}} por identificador
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identificador interno do registro.
+          schema:
+            type: integer
+
+      responses:
+
+        "200":
+          description: Registro encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/{{Recurso}}"
+
+        "404":
+          description: Registro não encontrado.
+
+        "500":
+          description: Erro interno do servidor.
+
+    put:
+      tags:
+        - "{{Nome Funcional da API}}"
+      summary: Atualiza {{recurso}}
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identificador interno do registro.
+          schema:
+            type: integer
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/{{Recurso}}Update"
+
+      responses:
+
+        "200":
+          description: Registro atualizado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/{{Recurso}}Update"
+
+        "404":
+          description: Registro não encontrado.
+
+        "500":
+          description: Erro interno do servidor.
+
+    delete:
+      tags:
+        - "{{Nome Funcional da API}}"
+      summary: Exclui {{recurso}}
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identificador interno do registro.
+          schema:
+            type: integer
+
+      responses:
+
+        "204":
+          description: Registro excluído com sucesso.
+
+        "404":
+          description: Registro não encontrado.
+
+        "500":
+          description: Erro interno do servidor.
+
+components:
+
+  securitySchemes:
+
+    basicAuth:
+      type: http
+      scheme: basic
+
+  schemas:
+
+    "{{Recurso}}":
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Identificador interno do registro.
+
+    "{{Recurso}}Create":
+      type: object
+      required: []
+      properties: {}
+
+    "{{Recurso}}Update":
+      type: object
+      properties: {}
+
+    "{{Recurso}}Paginado":
+      type: object
+      properties:
+        total:
+          type: integer
+          description: Quantidade total de registros encontrados.
+        hasNext:
+          type: boolean
+          description: Indica se existem mais páginas.
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/{{Recurso}}"
+
+    RowError:
+      type: object
+      description: Item de erro do envelope de erro padrão do repositório.
+      properties:
+        errorNumber:
+          type: integer
+          example: 2
+        errorType:
+          type: string
+          example: "EMS"
+        errorSubType:
+          type: string
+          example: "ERROR"
+        errorDescription:
+          type: string
+        errorHelp:
+          type: string
