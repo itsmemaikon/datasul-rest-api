@@ -147,6 +147,9 @@ paths:
         "400":
           description: Dados inválidos.
 
+        "409":
+          description: Já existe conta corrente cadastrada para a chave informada.
+
         "500":
           description: Erro interno do servidor.
 
@@ -405,3 +408,32 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/ContaCorrente"
+
+
+
+    RowError:
+
+      type: object
+      description: Item de erro do envelope de erro padrão do repositório.
+
+      properties:
+
+        errorNumber:
+          type: integer
+          example: 2
+
+        errorType:
+          type: string
+          example: "EMS"
+
+        errorSubType:
+          type: string
+          example: "ERROR"
+
+        errorDescription:
+          type: string
+          example: "Não encontrado(a) conta corrente de emitente para chave informada."
+
+        errorHelp:
+          type: string
+          example: "Não foi encontrada ocorrência para conta corrente de emitente com a chave informada."

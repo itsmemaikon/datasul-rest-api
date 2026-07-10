@@ -1,5 +1,9 @@
 # API Conta Corrente do Emitente
 
+![Módulo](https://img.shields.io/badge/m%C3%B3dulo-EMS2%2FCDP-blue)
+![Status](https://img.shields.io/badge/status-Est%C3%A1vel-brightgreen)
+![Versão](https://img.shields.io/badge/vers%C3%A3o-v1-lightgrey)
+
 ## 📋 Descrição
 
 A API **Conta Corrente do Emitente** disponibiliza serviços para consulta e manutenção das contas correntes vinculadas aos emitentes do módulo **EMS2/CDP** do TOTVS Datasul.
@@ -14,11 +18,46 @@ Por meio desta API é possível:
 
 ---
 
-## 🌐 Endpoint Base
+## ℹ️ Informações gerais
+
+| Item | Valor |
+|---|---|
+| Módulo Datasul | EMS2/CDP |
+| Camada | EMS2 |
+| Versão da API | v1 |
+| Arquivo endpoint | `api/v1/cta-emitente.p` |
+| Arquivo handler | `cta-emitente.p` |
+
+---
+
+## 🌐 Endpoint base
 
 ```text
 {{BASE_URL}}cdp/v1/cta-emitente
 ```
+
+---
+
+## 🔐 Autenticação
+
+Esta API utiliza **HTTP Basic Auth**.
+
+| Variável Postman | Descrição |
+|---|---|
+| `{{USERNAME}}` | Usuário Datasul |
+| `{{PASSWORD}}` | Senha do usuário |
+
+---
+
+## 📑 Sumário de endpoints
+
+| Método | Caminho | Descrição |
+|---|---|---|
+| `GET` | `/cta-emitente` | Consulta contas correntes (lista paginada) |
+| `GET` | `/cta-emitente/{id}` | Consulta conta corrente por identificador |
+| `POST` | `/cta-emitente` | Inclui uma conta corrente |
+| `PUT` | `/cta-emitente/{id}` | Atualiza uma conta corrente |
+| `DELETE` | `/cta-emitente/{id}` | Exclui uma conta corrente |
 
 ---
 
@@ -34,16 +73,16 @@ Permite utilização de filtros para restringir os resultados.
 
 ### Parâmetros
 
-| Parâmetro | Tipo | Obrigatório | Descrição |
-|---|---|---|---|
-| page | Integer | Não | Página atual da consulta |
-| pageSize | Integer | Não | Quantidade de registros por página |
-| emitente | Integer | Não | Código do emitente |
-| banco | Integer | Não | Código do banco |
-| agencia | String | Não | Código da agência |
-| contaCorrente | String | Não | Número da conta corrente |
-| preferencial | Boolean | Não | Retorna somente contas preferenciais |
-| search | String | Não | Pesquisa textual |
+| Parâmetro | Local | Tipo | Obrigatório | Descrição |
+|---|---|---|---|---|
+| page | query | Integer | Não | Página atual da consulta |
+| pageSize | query | Integer | Não | Quantidade de registros por página |
+| emitente | query | Integer | Não | Código do emitente |
+| banco | query | Integer | Não | Código do banco |
+| agencia | query | String | Não | Código da agência |
+| contaCorrente | query | String | Não | Número da conta corrente |
+| preferencial | query | Boolean | Não | Retorna somente contas preferenciais |
+| search | query | String | Não | Pesquisa textual |
 
 ### Exemplo de requisição
 
@@ -73,6 +112,12 @@ GET {{BASE_URL}}cdp/v1/cta-emitente?page=1&pageSize=20&emitente=2
 }
 ```
 
+### Possíveis erros
+
+| HTTP Status | ErrorNumber | Situação |
+|---|---|---|
+| 400 | - | Parâmetro de filtro inválido |
+
 ---
 
 ## GET `/cta-emitente/{id}`
@@ -83,9 +128,9 @@ Retorna uma conta corrente através do identificador interno.
 
 ### Parâmetros
 
-| Parâmetro | Tipo | Obrigatório | Descrição |
-|---|---|---|---|
-| id | Integer | Sim | Identificador interno da conta corrente |
+| Parâmetro | Local | Tipo | Obrigatório | Descrição |
+|---|---|---|---|---|
+| id | path | Integer | Sim | Identificador interno da conta corrente |
 
 ### Exemplo de requisição
 
@@ -109,6 +154,12 @@ GET {{BASE_URL}}cdp/v1/cta-emitente/9785625
 }
 ```
 
+### Possíveis erros
+
+| HTTP Status | ErrorNumber | Situação |
+|---|---|---|
+| 404 | 2 | Conta corrente não encontrada para o identificador informado |
+
 ---
 
 ## POST `/cta-emitente`
@@ -116,12 +167,6 @@ GET {{BASE_URL}}cdp/v1/cta-emitente/9785625
 ### Inclui uma conta corrente
 
 Cria uma nova conta corrente vinculada a um emitente.
-
-### Exemplo de requisição
-
-```http
-POST {{BASE_URL}}cdp/v1/cta-emitente
-```
 
 ### Corpo da requisição
 
@@ -134,6 +179,21 @@ POST {{BASE_URL}}cdp/v1/cta-emitente
     "agencia": "1595",
     "descricao": "TESTE API"
 }
+```
+
+| Campo | Tipo | Obrigatório | Descrição |
+|---|---|---|---|
+| emitente | Integer | Sim | Código do emitente |
+| contaCorrente | String | Sim | Número da conta corrente |
+| banco | Integer | Sim | Código do banco |
+| agencia | String | Não | Código da agência bancária |
+| preferencial | Boolean | Não | Indica se a conta é preferencial |
+| descricao | String | Não | Descrição da conta |
+
+### Exemplo de requisição
+
+```http
+POST {{BASE_URL}}cdp/v1/cta-emitente
 ```
 
 ### Resposta
@@ -151,6 +211,13 @@ POST {{BASE_URL}}cdp/v1/cta-emitente
 }
 ```
 
+### Possíveis erros
+
+| HTTP Status | ErrorNumber | Situação |
+|---|---|---|
+| 400 | - | Campos obrigatórios ausentes/inválidos (ex.: emitente inexistente) |
+| 409 | 1 | Já existe conta corrente cadastrada para a chave informada |
+
 ---
 
 ## PUT `/cta-emitente/{id}`
@@ -161,15 +228,9 @@ Atualiza os dados de uma conta corrente existente.
 
 ### Parâmetros
 
-| Parâmetro | Tipo | Obrigatório | Descrição |
-|---|---|---|---|
-| id | Integer | Sim | Identificador interno da conta corrente |
-
-### Exemplo de requisição
-
-```http
-PUT {{BASE_URL}}cdp/v1/cta-emitente/9785625
-```
+| Parâmetro | Local | Tipo | Obrigatório | Descrição |
+|---|---|---|---|---|
+| id | path | Integer | Sim | Identificador interno da conta corrente |
 
 ### Corpo da requisição
 
@@ -181,6 +242,20 @@ PUT {{BASE_URL}}cdp/v1/cta-emitente/9785625
     "agencia": "4081",
     "descricao": "TESTE API"
 }
+```
+
+| Campo | Tipo | Obrigatório | Descrição |
+|---|---|---|---|
+| contaCorrente | String | Não | Número da conta corrente |
+| banco | Integer | Não | Código do banco |
+| agencia | String | Não | Código da agência bancária |
+| preferencial | Boolean | Não | Indica se a conta é preferencial |
+| descricao | String | Não | Descrição da conta |
+
+### Exemplo de requisição
+
+```http
+PUT {{BASE_URL}}cdp/v1/cta-emitente/9785625
 ```
 
 ### Resposta
@@ -197,6 +272,12 @@ PUT {{BASE_URL}}cdp/v1/cta-emitente/9785625
 }
 ```
 
+### Possíveis erros
+
+| HTTP Status | ErrorNumber | Situação |
+|---|---|---|
+| 404 | 2 | Conta corrente não encontrada para o identificador informado |
+
 ---
 
 ## DELETE `/cta-emitente/{id}`
@@ -207,9 +288,9 @@ Remove uma conta corrente existente.
 
 ### Parâmetros
 
-| Parâmetro | Tipo | Obrigatório | Descrição |
-|---|---|---|---|
-| id | Integer | Sim | Identificador interno da conta corrente |
+| Parâmetro | Local | Tipo | Obrigatório | Descrição |
+|---|---|---|---|---|
+| id | path | Integer | Sim | Identificador interno da conta corrente |
 
 ### Exemplo de requisição
 
@@ -222,6 +303,12 @@ DELETE {{BASE_URL}}cdp/v1/cta-emitente/9785474
 **HTTP 204**
 
 Registro excluído com sucesso.
+
+### Possíveis erros
+
+| HTTP Status | ErrorNumber | Situação |
+|---|---|---|
+| 404 | 2 | Conta corrente não encontrada para o identificador informado |
 
 ---
 
@@ -240,6 +327,22 @@ Registro excluído com sucesso.
 | descricao | String | Descrição da conta |
 
 ---
+
+# ⚠️ Envelope de erro padrão
+
+```json
+{
+    "rowErrors": [
+        {
+            "errorNumber": 2,
+            "errorType": "EMS",
+            "errorSubType": "ERROR",
+            "errorDescription": "Não encontrado(a) conta corrente de emitente para chave informada.",
+            "errorHelp": "Não foi encontrada ocorrência para conta corrente de emitente com a chave informada."
+        }
+    ]
+}
+```
 
 # ⚠️ Códigos de Retorno
 
@@ -260,3 +363,12 @@ Registro excluído com sucesso.
 - Todos os endpoints utilizam autenticação Basic Auth.
 - Os campos apresentados representam o contrato JSON exposto pela API.
 - A implementação segue os padrões REST disponibilizados pelo TOTVS Datasul.
+- O identificador `id` corresponde ao RECID interno do registro no Datasul e não deve ser tratado como chave de negócio estável entre ambientes.
+
+---
+
+# 🕓 Changelog
+
+| Data | Versão | Descrição |
+|---|---|---|
+| 2026-07-10 | v1 | Documentação reestruturada conforme padrão do repositório (`docs/PADRAO-DOCUMENTACAO.md`). |
