@@ -117,6 +117,12 @@ GET {{BASE_URL}}cdp/v1/cta-emitente/9785625
 
 Cria uma nova conta corrente vinculada a um emitente.
 
+### Exemplo de requisição
+
+```http
+POST {{BASE_URL}}cdp/v1/cta-emitente
+```
+
 ### Corpo da requisição
 
 ```json
@@ -158,6 +164,12 @@ Atualiza os dados de uma conta corrente existente.
 | Parâmetro | Tipo | Obrigatório | Descrição |
 |---|---|---|---|
 | id | Integer | Sim | Identificador interno da conta corrente |
+
+### Exemplo de requisição
+
+```http
+PUT {{BASE_URL}}cdp/v1/cta-emitente/9785625
+```
 
 ### Corpo da requisição
 
