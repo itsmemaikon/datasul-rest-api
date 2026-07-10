@@ -34,7 +34,7 @@ ems2/
     ├── api/
     │   └── v1/
     │       ├── cta-emitente.p
-    │       ├── cta-emitente.md
+    │       ├── cta-emitente.docs.md
     │       ├── cta-emitente.openapi.yaml
     │       └── cta-emitente.postman.json
     │
@@ -49,17 +49,30 @@ ems2/
 | `api/v1/*.p` | Endpoint REST responsável pelo recebimento da requisição HTTP, serialização/desserialização do JSON e retorno da resposta. |
 | `*.p` | API Handler contendo a lógica de negócio da API. |
 | `*.i` | Definição das Temp-Tables e ProDataSets compartilhados entre o endpoint REST e o handler. |
-| `*.md` | Documentação da API. |
-| `*.openapi.yaml` | Especificação OpenAPI. |
-| `*.postman.json` | Collection do Postman. |
+| `api/v1/*.docs.md` | Documentação funcional da API. |
+| `api/v1/*.openapi.yaml` | Especificação OpenAPI. |
+| `api/v1/*.postman.json` | Collection do Postman. |
 
 ---
 
 # 📚 Documentação
 
-A documentação geral do projeto está disponível na pasta `docs`.
+Todas as APIs deste repositório seguem um **padrão único de documentação**, descrito em [`docs/PADRAO-DOCUMENTACAO.md`](./docs/PADRAO-DOCUMENTACAO.md). Esse documento define quais arquivos toda API precisa ter, a estrutura obrigatória de cada um e as convenções gerais (paginação, autenticação, envelope de erro).
 
-Cada endpoint possui sua própria documentação ao lado do respectivo endpoint REST.
+Para criar a documentação de uma nova API, parta dos templates prontos em [`docs/templates`](./docs/templates):
+
+- [`nome-api.docs.md`](./docs/templates/nome-api.docs.md) — documentação funcional.
+- [`nome-api.openapi.yaml`](./docs/templates/nome-api.openapi.yaml) — especificação OpenAPI.
+- [`CHECKLIST-PR.md`](./docs/templates/CHECKLIST-PR.md) — checklist a preencher no Pull Request.
+
+Cada endpoint possui sua própria documentação (`*.docs.md`) ao lado do respectivo endpoint REST, em `api/v1/`.
+
+## 🔌 APIs disponíveis
+
+| API | Módulo | Documentação |
+|---|---|---|
+| Conta Corrente do Emitente | EMS2/CDP | [`cta-emitente.docs.md`](./ems2/cdp/api/v1/cta-emitente.docs.md) |
+| Extrato de Conta Corrente | EMS5/CMG | [`extrato-cta-corrente.docs.md`](./ems5/cmg/api/v1/extrato-cta-corrente.docs.md) |
 
 ---
 

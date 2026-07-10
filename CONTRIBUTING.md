@@ -27,7 +27,7 @@ Cada endpoint deve possuir os seguintes arquivos:
 api/v1/
 
 nome-api.p
-nome-api.md
+nome-api.docs.md
 nome-api.openapi.yaml
 nome-api.postman.json
 ```
@@ -39,7 +39,7 @@ ems2/
     ├── api/
     │   └── v1/
     │       ├── cta-emitente.p
-    │       ├── cta-emitente.md
+    │       ├── cta-emitente.docs.md
     │       ├── cta-emitente.openapi.yaml
     │       └── cta-emitente.postman.json
     │
@@ -73,22 +73,25 @@ Responsabilidades:
 
 # 📖 Documentação
 
-Toda nova API deve possuir documentação contendo:
+Toda nova API deve seguir o **padrão oficial de documentação** definido em [`docs/PADRAO-DOCUMENTACAO.md`](./docs/PADRAO-DOCUMENTACAO.md). Não crie a documentação do zero: parta dos templates em [`docs/templates`](./docs/templates).
 
-- Descrição da API.
-- Endpoints disponíveis.
-- Métodos HTTP suportados.
-- Parâmetros de entrada.
-- Estrutura da resposta.
-- Exemplos de requisição.
-- Exemplos de retorno.
-- Observações importantes.
+O arquivo `nome-api.docs.md` deve permanecer junto ao endpoint, em `api/v1/`, e conter no mínimo:
+
+- Descrição da API e informações gerais (módulo, versão, autor).
+- Endpoint base e autenticação.
+- Sumário de todos os endpoints disponíveis.
+- Para cada endpoint: método HTTP, parâmetros (path/query), corpo da requisição (quando aplicável), exemplo de requisição, exemplo de resposta e possíveis erros.
+- Modelo de dados (tabela de campos do contrato JSON).
+- Envelope de erro padrão e tabela de códigos de retorno.
+- Changelog.
+
+Antes de abrir o Pull Request, preencha o [checklist de documentação](./docs/templates/CHECKLIST-PR.md).
 
 ---
 
 # 📑 OpenAPI
 
-Sempre que possível, deve ser disponibilizada a especificação OpenAPI da API.
+Toda nova API deve ser acompanhada de sua especificação OpenAPI, seguindo o esqueleto em [`docs/templates/nome-api.openapi.yaml`](./docs/templates/nome-api.openapi.yaml).
 
 O arquivo deve permanecer junto ao endpoint:
 
