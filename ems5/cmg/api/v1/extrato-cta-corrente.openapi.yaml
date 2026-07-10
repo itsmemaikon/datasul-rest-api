@@ -1,0 +1,722 @@
+openapi: 3.0.3
+
+info:
+  title: Datasul REST API - Extrato de Conta Corrente
+  description: |
+    API responsável pela consulta e manutenção de extratos de conta corrente e de
+    suas linhas de movimento, além da conferência de saldo, no módulo EMS5/CMG
+    do TOTVS Datasul.
+  version: 1.0.0
+
+servers:
+  - url: "{{BASE_URL}}"
+    description: Ambiente Datasul
+
+tags:
+  - name: Extrato de Conta Corrente
+    description: Operações relacionadas a extratos de conta corrente
+  - name: Linhas do Extrato
+    description: Operações relacionadas às linhas de movimento de um extrato
+  - name: Conferência
+    description: Conferência de saldo do extrato
+
+security:
+  - basicAuth: []
+
+paths:
+
+  /cmg/v1/extrato-cta-corrente:
+
+    get:
+      tags:
+        - Extrato de Conta Corrente
+      summary: Consulta extratos de conta corrente
+      description: Retorna uma lista paginada de extratos de conta corrente cadastrados.
+      parameters:
+
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            example: 1
+
+        - name: pageSize
+          in: query
+          required: false
+          schema:
+            type: integer
+            example: 20
+
+        - name: contaCorrente
+          in: query
+          description: Código da conta corrente.
+          required: false
+          schema:
+            type: string
+            example: "00000004006"
+
+        - name: extrato
+          in: query
+          description: Número do extrato de conta corrente.
+          required: false
+          schema:
+            type: integer
+            example: 1042
+
+        - name: dataInicial
+          in: query
+          description: Filtra extratos com data inicial a partir deste valor.
+          required: false
+          schema:
+            type: string
+            format: date
+            example: "2026-07-01"
+
+        - name: dataFinal
+          in: query
+          description: Filtra extratos com data final até este valor.
+          required: false
+          schema:
+            type: string
+            format: date
+            example: "2026-07-31"
+
+        - name: search
+          in: query
+          description: Pesquisa textual.
+          required: false
+          schema:
+            type: string
+
+      responses:
+
+        "200":
+          description: Consulta realizada com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExtratoPaginado"
+
+        "400":
+          description: Requisição inválida.
+
+        "500":
+          description: Erro interno do servidor.
+
+    post:
+      tags:
+        - Extrato de Conta Corrente
+      summary: Inclui um extrato de conta corrente
+      description: Cria um novo extrato de conta corrente.
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExtratoCreate"
+            example:
+              contaCorrente: "00000004006"
+              referenciaExtrato: "Extrato Julho/2026"
+              dataInicial: "2026-07-01"
+              dataFinal: "2026-07-31"
+              saldoInicial: 15230.45
+              saldoFinal: 18940.12
+
+      responses:
+
+        "201":
+          description: Registro criado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Extrato"
+
+        "400":
+          description: Dados inválidos.
+
+        "500":
+          description: Erro interno do servidor.
+
+  /cmg/v1/extrato-cta-corrente/{id}:
+
+    get:
+      tags:
+        - Extrato de Conta Corrente
+      summary: Consulta extrato por identificador
+      description: Retorna um extrato específico, com suas linhas de movimento aninhadas em `movimentos`.
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identificador interno (RECID) do extrato.
+          schema:
+            type: integer
+            example: 20481093
+
+      responses:
+
+        "200":
+          description: Registro encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExtratoComMovimentos"
+
+        "404":
+          description: Registro não encontrado.
+
+        "500":
+          description: Erro interno do servidor.
+
+    put:
+      tags:
+        - Extrato de Conta Corrente
+      summary: Atualiza um extrato de conta corrente
+      description: O campo `contaCorrente` não é alterável por este endpoint.
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identificador interno (RECID) do extrato.
+          schema:
+            type: integer
+            example: 20481093
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExtratoUpdate"
+            example:
+              referenciaExtrato: "Extrato Julho/2026 - Revisado"
+              dataInicial: "2026-07-01"
+              dataFinal: "2026-07-31"
+              saldoInicial: 15230.45
+              saldoFinal: 19010.00
+
+      responses:
+
+        "200":
+          description: Registro atualizado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExtratoComMovimentos"
+
+        "404":
+          description: Registro não encontrado.
+
+        "500":
+          description: Erro interno do servidor.
+
+    delete:
+      tags:
+        - Extrato de Conta Corrente
+      summary: Exclui um extrato de conta corrente
+      description: |
+        Diferente de outras APIs deste repositório, a exclusão retorna
+        **HTTP 200** com um corpo de confirmação, não HTTP 204.
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identificador interno (RECID) do extrato.
+          schema:
+            type: integer
+            example: 20481093
+
+      responses:
+
+        "200":
+          description: Registro excluído com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MensagemConfirmacao"
+
+        "404":
+          description: Registro não encontrado.
+
+        "500":
+          description: Erro interno do servidor.
+
+  /cmg/v1/extrato-cta-corrente/{id}/linhas:
+
+    post:
+      tags:
+        - Linhas do Extrato
+      summary: Inclui uma linha de movimento
+      description: |
+        A sequência da linha e o vínculo com a conta corrente/extrato são
+        atribuídos automaticamente. Campos `contaCorrente`, `extratoCtaCorrente`,
+        `sequencia` e `id` enviados no corpo são ignorados.
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identificador interno (RECID) do extrato.
+          schema:
+            type: integer
+            example: 20481093
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MovimentoCreate"
+            example:
+              doctoBanco: "000123"
+              tipoLancamento: "DOC"
+              dataMovto: "2026-07-05"
+              historicoMovto: "TED recebida - Cliente XPTO"
+              fluxoMovto: "C"
+              vlMovto: 4200.00
+
+      responses:
+
+        "201":
+          description: Linha criada com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Movimento"
+
+        "400":
+          description: Dados inválidos.
+
+        "404":
+          description: Extrato não encontrado.
+
+        "500":
+          description: Erro interno do servidor.
+
+  /cmg/v1/extrato-cta-corrente/{id}/linhas/{idLinha}:
+
+    put:
+      tags:
+        - Linhas do Extrato
+      summary: Atualiza uma linha de movimento
+      description: Não permite alterar `dataMovto` — apenas os campos do schema `MovimentoUpdate`.
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identificador interno (RECID) do extrato.
+          schema:
+            type: integer
+            example: 20481093
+        - name: idLinha
+          in: path
+          required: true
+          description: Identificador interno (RECID) da linha de movimento.
+          schema:
+            type: integer
+            example: 87421
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MovimentoUpdate"
+            example:
+              doctoBanco: "000123"
+              tipoLancamento: "DOC"
+              fluxoMovto: "C"
+              vlMovto: 4350.00
+              historicoMovto: "TED recebida - Cliente XPTO (valor corrigido)"
+
+      responses:
+
+        "200":
+          description: Linha atualizada com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Movimento"
+
+        "404":
+          description: Extrato ou linha não encontrados.
+
+        "500":
+          description: Erro interno do servidor.
+
+    delete:
+      tags:
+        - Linhas do Extrato
+      summary: Exclui uma linha de movimento
+      description: |
+        Diferente de outras APIs deste repositório, a exclusão retorna
+        **HTTP 200** com um corpo de confirmação, não HTTP 204.
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identificador interno (RECID) do extrato.
+          schema:
+            type: integer
+            example: 20481093
+        - name: idLinha
+          in: path
+          required: true
+          description: Identificador interno (RECID) da linha de movimento.
+          schema:
+            type: integer
+            example: 87421
+
+      responses:
+
+        "200":
+          description: Linha excluída com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MensagemConfirmacao"
+
+        "404":
+          description: Extrato ou linha não encontrados.
+
+        "500":
+          description: Erro interno do servidor.
+
+  /cmg/v1/extrato-cta-corrente/{id}/conferencia:
+
+    get:
+      tags:
+        - Conferência
+      summary: Consulta a conferência de saldo do extrato
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identificador interno (RECID) do extrato.
+          schema:
+            type: integer
+            example: 20481093
+
+      responses:
+
+        "200":
+          description: Conferência retornada com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Conferencia"
+
+        "404":
+          description: Extrato não encontrado.
+
+        "500":
+          description: Erro interno do servidor.
+
+components:
+
+  securitySchemes:
+
+    basicAuth:
+      type: http
+      scheme: basic
+
+  schemas:
+
+    Extrato:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 20481093
+        contaCorrente:
+          type: string
+          example: "00000004006"
+        extratoCtaCorrente:
+          type: integer
+          example: 1042
+        referenciaExtrato:
+          type: string
+          example: "Extrato Julho/2026"
+        dataInicial:
+          type: string
+          format: date
+          example: "2026-07-01"
+        dataFinal:
+          type: string
+          format: date
+          example: "2026-07-31"
+        dataGeracaoMovto:
+          type: string
+          format: date
+          example: "2026-07-01"
+        saldoInicial:
+          type: number
+          format: double
+          example: 15230.45
+        saldoFinal:
+          type: number
+          format: double
+          example: 18940.12
+        dataAlteracao:
+          type: string
+          format: date
+        horaAlteracao:
+          type: string
+          example: "14:32:10"
+        usuarioAlteracao:
+          type: string
+          example: "mlopes"
+
+    ExtratoComMovimentos:
+      allOf:
+        - $ref: "#/components/schemas/Extrato"
+        - type: object
+          properties:
+            movimentos:
+              type: array
+              items:
+                $ref: "#/components/schemas/Movimento"
+
+    ExtratoCreate:
+      type: object
+      required:
+        - contaCorrente
+        - dataInicial
+        - dataFinal
+        - saldoInicial
+        - saldoFinal
+      properties:
+        contaCorrente:
+          type: string
+          example: "00000004006"
+        referenciaExtrato:
+          type: string
+          example: "Extrato Julho/2026"
+        dataInicial:
+          type: string
+          format: date
+          example: "2026-07-01"
+        dataFinal:
+          type: string
+          format: date
+          example: "2026-07-31"
+        saldoInicial:
+          type: number
+          format: double
+          example: 15230.45
+        saldoFinal:
+          type: number
+          format: double
+          example: 18940.12
+
+    ExtratoUpdate:
+      type: object
+      properties:
+        referenciaExtrato:
+          type: string
+        dataInicial:
+          type: string
+          format: date
+        dataFinal:
+          type: string
+          format: date
+        saldoInicial:
+          type: number
+          format: double
+        saldoFinal:
+          type: number
+          format: double
+
+    ExtratoPaginado:
+      type: object
+      properties:
+        total:
+          type: integer
+          example: 1
+        hasNext:
+          type: boolean
+          example: false
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Extrato"
+
+    Movimento:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 87421
+        contaCorrente:
+          type: string
+          example: "00000004006"
+        extratoCtaCorrente:
+          type: integer
+          example: 1042
+        sequencia:
+          type: integer
+          example: 1
+        doctoBanco:
+          type: string
+          example: "000123"
+        tipoLancamento:
+          type: string
+          example: "DOC"
+        dataMovto:
+          type: string
+          format: date
+          example: "2026-07-05"
+        historicoMovto:
+          type: string
+          example: "TED recebida - Cliente XPTO"
+        fluxoMovto:
+          type: string
+          enum: ["C", "D"]
+          example: "C"
+        ligacaoConciliacao:
+          type: string
+        situacaConciliacao:
+          type: string
+          example: "P"
+        conciliacao:
+          type: boolean
+          example: false
+        vlMovto:
+          type: number
+          format: double
+          example: 4200.00
+        vlPendenteConciliacao:
+          type: number
+          format: double
+          example: 4200.00
+
+    MovimentoCreate:
+      type: object
+      required:
+        - doctoBanco
+        - tipoLancamento
+        - dataMovto
+        - fluxoMovto
+        - vlMovto
+      properties:
+        doctoBanco:
+          type: string
+          example: "000123"
+        tipoLancamento:
+          type: string
+          example: "DOC"
+        dataMovto:
+          type: string
+          format: date
+          example: "2026-07-05"
+        historicoMovto:
+          type: string
+          example: "TED recebida - Cliente XPTO"
+        fluxoMovto:
+          type: string
+          enum: ["C", "D"]
+          example: "C"
+        vlMovto:
+          type: number
+          format: double
+          example: 4200.00
+
+    MovimentoUpdate:
+      type: object
+      properties:
+        doctoBanco:
+          type: string
+          example: "000123"
+        tipoLancamento:
+          type: string
+          example: "DOC"
+        fluxoMovto:
+          type: string
+          enum: ["C", "D"]
+          example: "C"
+        vlMovto:
+          type: number
+          format: double
+          example: 4350.00
+        historicoMovto:
+          type: string
+          example: "TED recebida - Cliente XPTO (valor corrigido)"
+
+    Conferencia:
+      type: object
+      properties:
+        contaCorrente:
+          type: string
+          example: "00000004006"
+        extratoCtaCorrente:
+          type: integer
+          example: 1042
+        dataInicial:
+          type: string
+          format: date
+        dataFinal:
+          type: string
+          format: date
+        saldoInicial:
+          type: number
+          format: double
+        saldoFinal:
+          type: number
+          format: double
+        dataInicialInformado:
+          type: string
+          format: date
+        dataFinalInformado:
+          type: string
+          format: date
+        saldoFinalInformado:
+          type: number
+          format: double
+        dataInicialAprovado:
+          type: boolean
+        dataFinalAprovado:
+          type: boolean
+        saldoAprovado:
+          type: boolean
+
+    MensagemConfirmacao:
+      type: object
+      description: Corpo padrão retornado pelas exclusões desta API (HTTP 200).
+      properties:
+        code:
+          type: integer
+          example: 1
+        message:
+          type: string
+          example: "Registro excluído com sucesso"
+        type:
+          type: string
+          example: "information"
+
+    RowError:
+      type: object
+      description: Item de erro do envelope de erro padrão do repositório.
+      properties:
+        errorNumber:
+          type: integer
+          example: 2
+        errorType:
+          type: string
+          example: "EMS"
+        errorSubType:
+          type: string
+          example: "ERROR"
+        errorDescription:
+          type: string
+          example: "Não encontrado(a) extrato de conta corrente para chave informada."
+        errorHelp:
+          type: string
+          example: "Não foi encontrada ocorrência para extrato de conta corrente com a chave informada."
