@@ -1,0 +1,407 @@
+openapi: 3.0.3
+
+info:
+  title: Datasul REST API - Conta Corrente do Emitente
+  description: |
+    API responsável pela manutenção das contas correntes vinculadas aos emitentes
+    do módulo EMS2/CDP do TOTVS Datasul.
+
+    A API permite consultar, incluir, alterar e excluir contas correntes de emitentes.
+  version: 1.0.0
+
+servers:
+  - url: "{{BASE_URL}}"
+    description: Ambiente Datasul
+
+tags:
+  - name: Conta Corrente do Emitente
+    description: Operações relacionadas às contas correntes dos emitentes
+
+security:
+  - basicAuth: []
+
+paths:
+
+  /cdp/v1/cta-emitente:
+
+    get:
+      tags:
+        - Conta Corrente do Emitente
+      summary: Consulta contas correntes do emitente
+      description: |
+        Retorna uma lista paginada de contas correntes cadastradas.
+
+        Permite filtros por emitente, banco, agência, conta corrente,
+        preferência e pesquisa textual.
+      parameters:
+
+        - name: page
+          in: query
+          description: Página atual da consulta.
+          required: false
+          schema:
+            type: integer
+            example: 1
+
+        - name: pageSize
+          in: query
+          description: Quantidade de registros por página.
+          required: false
+          schema:
+            type: integer
+            example: 20
+
+        - name: emitente
+          in: query
+          description: Código do emitente.
+          required: false
+          schema:
+            type: integer
+            example: 2763
+
+        - name: banco
+          in: query
+          description: Código do banco.
+          required: false
+          schema:
+            type: integer
+            example: 237
+
+        - name: agencia
+          in: query
+          description: Código da agência bancária.
+          required: false
+          schema:
+            type: string
+            example: "0033987"
+
+        - name: contaCorrente
+          in: query
+          description: Número da conta corrente.
+          required: false
+          schema:
+            type: string
+            example: "00000004006"
+
+        - name: preferencial
+          in: query
+          description: Indica se deve retornar somente contas preferenciais.
+          required: false
+          schema:
+            type: boolean
+            example: true
+
+        - name: search
+          in: query
+          description: Pesquisa textual.
+          required: false
+          schema:
+            type: string
+            example: "itau"
+
+      responses:
+
+        "200":
+          description: Consulta realizada com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContaCorrentePaginada"
+
+        "400":
+          description: Requisição inválida.
+
+        "500":
+          description: Erro interno do servidor.
+
+
+    post:
+      tags:
+        - Conta Corrente do Emitente
+      summary: Inclui uma conta corrente do emitente
+      description: Cria uma nova conta corrente vinculada a um emitente.
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContaCorrenteCreate"
+            example:
+              emitente: 2769
+              banco: 1
+              agencia: "1595"
+              contaCorrente: "13002158"
+              preferencial: true
+              descricao: "TESTE API"
+
+      responses:
+
+        "201":
+          description: Registro criado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContaCorrente"
+
+        "400":
+          description: Dados inválidos.
+
+        "500":
+          description: Erro interno do servidor.
+
+
+
+  /cdp/v1/cta-emitente/{id}:
+
+    get:
+      tags:
+        - Conta Corrente do Emitente
+      summary: Consulta conta corrente por identificador
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identificador interno do registro.
+          schema:
+            type: integer
+            example: 9785625
+
+      responses:
+
+        "200":
+          description: Registro encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContaCorrente"
+
+        "400":
+          description: Requisição inválida.
+
+        "404":
+          description: Registro não encontrado.
+
+        "500":
+          description: Erro interno do servidor.
+
+
+
+    put:
+      tags:
+        - Conta Corrente do Emitente
+      summary: Atualiza uma conta corrente do emitente
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identificador interno do registro.
+          schema:
+            type: integer
+            example: 9785474
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContaCorrenteUpdate"
+            example:
+              banco: 1
+              agencia: "4081"
+              contaCorrente: "64634"
+              preferencial: true
+              descricao: "TESTE API"
+
+      responses:
+
+        "200":
+          description: Registro atualizado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContaCorrenteUpdate"
+
+        "400":
+          description: Dados inválidos.
+
+        "404":
+          description: Registro não encontrado.
+
+        "500":
+          description: Erro interno do servidor.
+
+
+
+    delete:
+      tags:
+        - Conta Corrente do Emitente
+      summary: Exclui uma conta corrente do emitente
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identificador interno do registro.
+          schema:
+            type: integer
+            example: 9785474
+
+      responses:
+
+        "204":
+          description: Registro excluído com sucesso.
+
+        "400":
+          description: Requisição inválida.
+
+        "404":
+          description: Registro não encontrado.
+
+        "500":
+          description: Erro interno do servidor.
+
+
+
+components:
+
+  securitySchemes:
+
+    basicAuth:
+      type: http
+      scheme: basic
+
+
+  schemas:
+
+    ContaCorrente:
+
+      type: object
+
+      properties:
+
+        id:
+          type: integer
+          description: Identificador interno do registro.
+          example: 9785625
+
+        emitente:
+          type: integer
+          description: Código do emitente.
+          example: 2
+
+        banco:
+          type: integer
+          description: Código do banco.
+          example: 237
+
+        agencia:
+          type: string
+          description: Código da agência.
+          example: "0033987"
+
+        contaCorrente:
+          type: string
+          description: Número da conta corrente.
+          example: "00000004006"
+
+        preferencial:
+          type: boolean
+          description: Indica se a conta é preferencial.
+          example: true
+
+        descricao:
+          type: string
+          description: Descrição da conta.
+          example: ""
+
+
+
+    ContaCorrenteCreate:
+
+      type: object
+
+      required:
+
+        - emitente
+        - banco
+        - contaCorrente
+
+      properties:
+
+        emitente:
+          type: integer
+          example: 2769
+
+        banco:
+          type: integer
+          example: 1
+
+        agencia:
+          type: string
+          example: "1595"
+
+        contaCorrente:
+          type: string
+          example: "13002158"
+
+        preferencial:
+          type: boolean
+          example: true
+
+        descricao:
+          type: string
+          example: "TESTE API"
+
+
+
+    ContaCorrenteUpdate:
+
+      type: object
+
+      properties:
+
+        banco:
+          type: integer
+          example: 1
+
+        agencia:
+          type: string
+          example: "4081"
+
+        contaCorrente:
+          type: string
+          example: "64634"
+
+        preferencial:
+          type: boolean
+          example: true
+
+        descricao:
+          type: string
+          example: "TESTE API"
+
+
+
+    ContaCorrentePaginada:
+
+      type: object
+
+      properties:
+
+        total:
+          type: integer
+          description: Quantidade total de registros encontrados.
+          example: 2
+
+        hasNext:
+          type: boolean
+          description: Indica se existem mais páginas.
+          example: true
+
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ContaCorrente"
